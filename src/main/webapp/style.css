@@ -1,0 +1,131 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 16-Oct-2018, 7:47:58 PM
+    Author     : jamietung
+*/
+
+
+@charset "UTF-8";
+
+html {
+    height: 100%;
+}
+
+body {
+    background-color: black;
+    height: 100%;
+}
+
+#safeDiv {
+    display: block;
+    position: relative;
+    background-color: black;
+    min-height: 50%;
+    width: 33%;
+    margin-left: auto;
+    margin-right: auto;
+    top: 25%;
+    z-index: 20;
+}
+canvas {
+            background-color: black;
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+#digitalDisplay {
+    display: block;
+    border: solid black 2px;
+    background-color: white;
+    width: 100%;
+    min-height:60px;
+}
+
+#safeDiv div {
+    padding-left: 4px;
+}
+
+#safeDiv div Button {
+    display: block;
+    width: 33%;
+    height: 87px;
+    font-size: larger;
+    float: left;
+}
+
+#clueDiv {
+    display: none;
+    border: solid green 3px;
+    width: 49.5%;
+    height: auto !important; /* real browsers */
+    min-height: 100%; /* real browsers */
+    color: green;
+}
+
+div.instructions, div.clue, div.comment {
+    padding-left: 10pt;
+    padding-right: 10pt;
+    padding-top: 5pt;
+    padding-bottom: 5pt;
+}
+
+
+#commentDiv {
+    border: solid green 3px;
+    display: none;
+    width: 49.5%;
+    height: auto !important; /* real browsers */
+    min-height: 90%; /* real browsers */
+    color: green;
+    float: right;
+}
+#codeEntry {
+   border: solid green 3px;
+   display: none;
+   position: relative;
+   width: 49.5%;
+   color: green;
+   min-height: 2%;
+   left: 50%;
+   top: -10%;
+   
+}
+#commentEntry {
+    border: solid green 3px;
+    display: none;
+    position: relative;
+    width: 49.5%;
+    min-height: 2%;
+    color:green;
+    left: 50%;
+    top: -10%;
+}
+textarea {
+    display: none;
+    -webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+        height: 100%;
+	width: 100%;
+}
+div.trashError {
+    font-weight: bold;
+    color:red;
+}
+div#clueInputDiv {
+    display: none;
+    position: relative;
+    top: -100%;
+    left: 50%;
+    width: 48%;
+}

@@ -1,0 +1,26 @@
+
+@charset "UTF-8";
+body {
+    background-color: black;
+}
+
+#clueDiv {
+    display: block;
+    width: 50%;
+    color: green;
+}
+#commentDiv {
+    display: block;
+    width: 50%;
+    color: green;
+}
+#codeEntry {
+   display: block;
+   width: 50%;
+   color: green;
+}
+#commentEntry {
+    display: block;
+    width: 50%;
+    color:green;
+}
