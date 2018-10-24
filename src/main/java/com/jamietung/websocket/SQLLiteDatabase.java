@@ -102,11 +102,11 @@ public class SQLLiteDatabase {
      * @param agentId
      * @param team 
      */
-    public static void addClue(String clue, String agentId, int team) {
+    public static void addClue(String clue, int team) {
         Connection con = connect();
         try {
             Statement stmt=con.createStatement();  
-            stmt.executeUpdate("INSERT INTO spyDB.clues (team, clue, agentId) VALUES (" + team + ",'"+ clue + "','"+ agentId + "')"); 
+            stmt.executeUpdate("INSERT INTO spyDB.clues (team, clue) VALUES (" + team + ",'"+ clue + "')"); 
         } catch (SQLException ex) {
             Logger.getLogger(SQLLiteDatabase.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -115,17 +115,99 @@ public class SQLLiteDatabase {
     /**
      * get clues 
      * @param team
+     * @param number
      * @return 
      */
-    public static ResultSet getClues(int team) {
+    public static ResultSet getClues(int team, int number) {
         try {
             Connection con = connect();
             Statement stmt=con.createStatement();
-            return stmt.executeQuery("SELECT agentId, clue from spyDB.clues where team = " + team);
+            return stmt.executeQuery("SELECT clue from spyDB.clues where team = " + team + " Limit " + number);
         } catch (SQLException ex) {
             Logger.getLogger(SQLLiteDatabase.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+
+    /**
+     * Return true if code with specific team is revealed.
+     * @param code
+     * @param team
+     * @return 
+     */
+    public static boolean checkIsSeen(String code, int team) {
+        try {
+            Connection con = connect();
+            Statement stmt=con.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT revealed from spyDB.codes where team = " + team + " and code =" + code);
+            while(rs.next()) {
+                String revealed = rs.getString("revealed");
+                if (revealed.equals("y")) {
+                    return true;
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(SQLLiteDatabase.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+
+    /**
+     * Return true if code with team is in table.
+     * @param code
+     * @param team
+     * @return 
+     */
+    public static boolean checkIsValidCode(String code, int team) {
+        try {
+            Connection con = connect();
+            Statement stmt=con.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT count(code) as numFound from spyDB.codes where team = " + team + " and code =" + code);
+            while(rs.next()){ 
+                int numFound = rs.getInt("numFound");
+                if (numFound > 0) {
+                    return true;
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(SQLLiteDatabase.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+
+    /**
+     * changed revealed to true.
+     * @param code 
+     */
+    public static void makeSeen(String code) {
+        Connection con = connect();
+        try {
+            Statement stmt=con.createStatement();  
+            System.out.println("update spyDB.codes set revealed = 'y' where code = " + code);
+            stmt.executeUpdate("update spyDB.codes set revealed = 'y' where code = " + code); 
+        } catch (SQLException ex) {
+            Logger.getLogger(SQLLiteDatabase.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Return number of revealed clues for team.
+     * @param team
+     * @return 
+     */
+    public static int countRevealed(int team) {
+        try {
+            Connection con = connect();
+            Statement stmt=con.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT count(code) as numFound from spyDB.codes where team = " + team + " and revealed = 'y'");
+            while(rs.next()){ 
+                int numFound = rs.getInt("numFound");
+                return numFound;
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(SQLLiteDatabase.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return 0;
     }
     
 }

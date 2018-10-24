@@ -24,12 +24,7 @@ var clues = [];
  */
 function onMessage(event) {
     var message = JSON.parse(event.data);
-    if (message.action === "garbRemoval") {
-        if (player.getAgentId() == message.caretakerId) {
-            $("#clueDiv").append("<div class='trashError'>"+message.trash+"</div>");
-            playAlertSound();
-        }
-    } else if (message.action === "postComment") {
+    if (message.action === "postComment") {
         var team = message.team;
         var comment = message.comment;
         if (player.getTeam() === team) {
@@ -43,16 +38,6 @@ function onMessage(event) {
             clues[clueNumber] = createClue(clueNumber, clueContent);
             updateClues();
         }  
-    } else if (message.action === "confirmLogin") {
-        var team = message.team;
-        if (team > 0) {
-            player.setTeam(team);
-            openDoors();
-            showCommunicationInterface();
-            updateClues();
-        } else {
-            resetLoginDisplay();
-        }
     }
 }
 
@@ -71,7 +56,7 @@ function updateClues() {
     });
     for(i = 0; i < clues.length; i++) {
         if(!(i in currentClues)) {
-            $("#clueDiv").append("<div class='clue' clueNumber="+clues[i].clueNumber+">"+clues[i].clueContent+"</div>");
+            $("#clueDiv").append("<div class='clue' clueNumber="+clues[i].clueNumber+">"+(clues[i].clueNumber+1)+" : "+clues[i].clueContent+"</div>");
         }
     }
 }
@@ -81,42 +66,23 @@ function updateClues() {
  * @returns {undefined}
  */
 function showCommunicationInterface() {
-     $("#safeDiv").hide();
      $("#commentDiv").show();
      $("#clueDiv").show();
-     $("#codeEntry").show();
      $("#commentEntry").show();
-     $("#clueInputDiv").hide();
+     $("#codeEntry").show();
      $("textarea").show();
 }
 
-function showLoginDiv() {
-    $("#safeDiv").show();
-     $("#commentDiv").hide();
-     $("#clueDiv").hide();
-     $("#codeEntry").hide();
-     $("#commentEntry").hide();
-     $("#clueInputDiv").hide();
-     $("textarea").hide();
-}
-
 /**
- * handle enter key press in code text area.
+ * hide communication interface.
+ * @returns {undefined}
  */
-$("#codeTextArea").keypress(function(event) {
-    var keycode = (event.keyCode ? event.keyCode : event.which);
-    if(keycode == '13'){
-        var code = $(this).val();
-        var playerAction = {
-            action: "processCode",
-            agentId: player.getAgentId(),
-            team: player.getTeam(),
-            code: code
-        };
-        $("#codeTextArea").val("").blur();
-        socket.send(JSON.stringify(playerAction));
-    }
-});
+function hideCommunicationInterface() {
+    $("#commentDiv").hide();
+    $("#clueDiv").hide();
+    $("#commentEntry").hide();
+    $("#codeEntry").hide();
+}
 
 /**
  * handle enter key in comment text area.
@@ -127,7 +93,7 @@ $("#commentTextArea").keypress(function(event) {
         var comment = $(this).val();
         var playerAction = {
             action: "postComment",
-            agentId: agentId,
+            agentId: player.getAgentId(),
             comment: comment,
             team: player.getTeam()
         };
@@ -177,81 +143,18 @@ function init() {
         location.reload();
     };
     initializeCanvas();
+    setTimeout(function() {
+        openDoors();
+    }, 1000);
 }
-
-
-
-
+    
 /**
- * reset login display.
+ * show voluntary code div.
  * @returns {undefined}
  */
-function resetLoginDisplay() {
-    number = "";
-    agentId = "";
-    passcode = "";
-    player = "";
-    $("#digitalDisplay").html("Unauthorized Access detected.  Please Enter agentId.");
+function showVoluntaryCodeDiv() {
+    $("#voluntaryCodeDiv").show();
 }
-
-/**
- * KeyPad functionality
- * @type type
- */
-
-$("#safeDiv Button").click(function() {
-    var buttonValue = $(this).html();
-    if ($.isNumeric(buttonValue)) {
-        number = number + buttonValue;
-    } else if (buttonValue === "Clear") {
-        number = "";
-    }
-    $("#digitalDisplay").html(number);
-    if (buttonValue === "Enter") {
-        if (number.length > 0) {
-            if (agentId.length === 0) {
-                agentId = number;
-                number = "";
-                $("#digitalDisplay").html("Enter Passcode");
-            }  else {
-                passcode = number;
-                player = createPlayer(agentId, passcode);
-                player.attemptLogin();
-            }
-            
-        }
-    }
-    playSound();
-});
-
-/**
- * show clue input div.
- * @returns {undefined}
- */
-function showClueEntry() {
-    $("#safeDiv").hide();
-    $("#commentDiv").hide();
-    $("#clueDiv").show();
-    $("#codeEntry").hide();
-    $("#commentEntry").hide();
-    $("#clueInputDiv").show();
-    $("#agentIdFieldBox").show();
-    $("#cluebox").show();
-}
-
-$("#cluesubmit").click(function(){
-    var clueAgentId = $("#agentIdFieldBox").val();
-    var clue = $("#cluebox").val();
-    var playerAction = {
-        action: "updateClueList",
-        agentId: player.getAgentId(),
-        clueAgentId: clueAgentId,
-        clue: clue
-    };
-    $("#agentIdFieldBox").val("").blur();
-    $("#cluebox").val("").blur();
-    socket.send(JSON.stringify(playerAction));
-});
 
 
 /**
@@ -260,32 +163,21 @@ $("#cluesubmit").click(function(){
  * @param {type} password
  * @returns {createPlayer.newplayer}
  */
-function createPlayer(agentId, password) {
-	
+function createPlayer() {
+    var agentId = parseInt(Math.random()*10000, 10);   
+    var url = new URL(location.href);
+    var team = parseInt(url.searchParams.get("team"));
     var newplayer = {
 	agentId: agentId,
-	password: password,
-	team: "",
-        setAgentId: function(agentId) {
-            this.agentId = agentId;
-        },
+	team: team,
         getAgentId: function() {
             return this.agentId;
         },
-        
         setTeam: function(side) {
             this.team = side;
         },
         getTeam: function() {
             return this.team;
-        },
-        attemptLogin: function () {
-            var PlayerAction = {
-                action: "login",
-                agentId: agentId,
-                passcode: password
-            };
-            socket.send(JSON.stringify(PlayerAction));
         }
     }
     return newplayer;
@@ -328,7 +220,52 @@ function openDoors() {
         if (position > canvas.width/2) {
             clearInterval(animationInterval);
             $("#canvas").hide();
+            showVoluntaryCodeDiv();
         }
     }, 50);
     
 }
+
+$("#summonVoluntaryCodeDiv").click(function(event) {
+    hideCommunicationInterface();
+    $("#voluntaryCodeDiv").show();
+    
+});
+
+$("input.codeBox").keyup(function(e) {
+    var id = $(this).attr("id");
+    var theNum = id.replace( /^\D+/g, '');
+    if (theNum != "5") {
+        theNum = parseInt(theNum) + 1;
+        var newId = "#codeBox"+theNum;
+        $(newId).focus();
+    }
+});
+
+$("#voluntaryCodeDiv button").click(function(event) {
+    var id = $(this).attr("id");
+    if (player == null)
+        player = createPlayer();
+    if (id == "enterButton") {
+        var code = "";
+        $("input.codeBox").each(function() {
+            code += $(this).val();
+        });
+        
+        var playerAction = {
+            action: "checkCode",
+            code: code,
+            team: player.getTeam()
+        };
+        socket.send(JSON.stringify(playerAction));
+    } else {
+        var playerAction = {
+            action: "updateClueList",
+            team: player.getTeam()
+        };
+        socket.send(JSON.stringify(playerAction));
+    }
+    
+    showCommunicationInterface();
+    $("#voluntaryCodeDiv").hide();
+});

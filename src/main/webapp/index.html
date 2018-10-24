@@ -8,7 +8,19 @@
     </head>
     <body>
         <canvas id="canvas" width="640" height="400"></canvas>
-       
+        
+        <div id="voluntaryCodeDiv">
+            <div>Enter Code</div>
+            <div>
+                <input id="codeBox1" class="codeBox" maxlength="1"/>
+                <input id="codeBox2" class="codeBox" maxlength="1"/>
+                <input id="codeBox3" class="codeBox" maxlength="1"/>
+                <input id="codeBox4" class="codeBox" maxlength="1"/>
+                <input id="codeBox5" class="codeBox" maxlength="1"/>
+            </div>
+            <button id="skipButton">Skip</button>
+            <button id="enterButton">Enter</button>
+        </div>
         
         <div id ="commentDiv">
             <div class="instructions">Comments used to collaborate with other agents on your faction will be displayed here.
@@ -22,7 +34,7 @@
             </div>
         </div>
         <div id ="codeEntry">
-            <textarea id="codeTextArea" placeholder="Enter Code here: ..."></textarea>
+            <button id="summonVoluntaryCodeDiv">Input Code</button>
         </div>
         <div id ="commentEntry">
             <textarea id="commentTextArea" placeholder="Comment here:..."></textarea>
@@ -32,11 +44,12 @@
             <div><textarea id="cluebox" placeholder="Put Clue here:" rows="5"></textarea></div>
             <button id="cluesubmit">Submit</button>
         </div>
+        
         <audio id="clickSound" src="RbMg.wav"></audio>
         <audio id="alertSound" src="alertsound.wav"></audio>
         <audio id="wooshSound" src="woosh.wav"></audio>
-        <img id="leftDoor" src="leftdoor.png" alt="leftdoor" hidden/>
-        <img id="rightDoor" src="rightdoor.png" alt="rightdoor" hidden/>
+        <img id="leftDoor" src="left.png" alt="leftdoor" hidden/>
+        <img id="rightDoor" src="right.png" alt="rightdoor" hidden/>
         <script src="websocket.js"></script>
         <script src="keypad.js"></script>
     </body>

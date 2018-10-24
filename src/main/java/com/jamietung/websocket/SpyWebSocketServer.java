@@ -65,14 +65,16 @@ public class SpyWebSocketServer {
                     sessionHandler.notifyCaretaker(agentId, code, team);
                 } else if ("postComment".equals(jsonMessage.getString("action"))) {
                     String comment = jsonMessage.getString("comment");
-                    String agentId = jsonMessage.getString("agentId");
+                    int agentId = jsonMessage.getInt("agentId");
                     int team = jsonMessage.getInt("team");
-                    sessionHandler.sendComment(team, agentId, comment);
+                    sessionHandler.sendComment(team, String.valueOf(agentId), comment);
                 } else if ("updateClueList".equals(jsonMessage.getString("action"))) {
-                    String agentId = jsonMessage.getString("agentId");
-                    String clueAgentId = jsonMessage.getString("clueAgentId");
-                    String clue = jsonMessage.getString("clue");
-                    sessionHandler.processClue(agentId, clueAgentId, clue);
+                    int team = jsonMessage.getInt("team");
+                    sessionHandler.updateClues(team);
+                } else if ("checkCode".equals(jsonMessage.getString("action"))) {
+                    String code = jsonMessage.getString("code");
+                    int team = jsonMessage.getInt("team");
+                    sessionHandler.checkCode(code, team);
                 }
             } catch(Exception e) {
                 System.out.println(e);

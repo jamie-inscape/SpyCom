@@ -52,7 +52,7 @@ public class UserSessionHandler {
                 .add("team", team)
                 .build();
         sendToSession(session, loginMessage);
-        sendClues(team);
+        //sendClues(team);
     }
     
     /**
@@ -160,23 +160,26 @@ public class UserSessionHandler {
             int team = 0;
             if (agentId.equals(team1CaretakerId)) team = 1;
             else if (agentId.equals(team2CaretakerId)) team = 2;
-            SQLLiteDatabase.addClue(clue, clueAgentId, team);
-            sendClues(team);
+            SQLLiteDatabase.addClue(clue, team);
+            //sendClues(team);
         }
     }
 
+    
+    
+    
     /**
      * Send Clues.
      * @param team 
      */
-    private void sendClues(int team) {
+    private void sendClues(int team, int count) {
         JsonProvider provider = JsonProvider.provider();
-        ResultSet rs = SQLLiteDatabase.getClues(team);
+        ResultSet rs = SQLLiteDatabase.getClues(team, count);
         int clueNumber = 0;
         try {
             
             while(rs.next()){
-                String clueAgent = rs.getString("agentId") + ":" + rs.getString("clue");
+                String clueAgent = rs.getString("clue");
                 JsonObject clueMessage = provider.createObjectBuilder()
                         .add("action", "updateClueList")
                         .add("clueNumber", clueNumber++)
@@ -189,6 +192,30 @@ public class UserSessionHandler {
         } catch (SQLException ex) {
             Logger.getLogger(UserSessionHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    /**
+     * Check code to see if valid or revealed.
+     * @param code
+     * @param team 
+     */
+    public void checkCode(String code, int team) {
+        boolean isSeen = SQLLiteDatabase.checkIsSeen(code, team);
+        boolean isValidCode = SQLLiteDatabase.checkIsValidCode(code, team);
+        if (isValidCode) {
+            if(!isSeen) {
+                SQLLiteDatabase.makeSeen(code);
+            }
+            int codeCount = SQLLiteDatabase.countRevealed(team);
+            sendClues(team, codeCount);
+            
+        }
+        
+    }
+
+    public void updateClues(int team) {
+        int codeCount = SQLLiteDatabase.countRevealed(team);
+        sendClues(team, codeCount);
     }
     
     
