@@ -17,6 +17,28 @@ var passcode = "";
 var player;
 var clues = [];
 
+
+/**
+ * initialize.
+ * @returns {undefined}
+ */
+function init() {
+    socket = new WebSocket("ws://68.66.205.158:8080/SpyCom/actions");
+    socket.onmessage = onMessage;
+    socket.onclose = function(event) {
+        location.reload();
+    }
+    socket.onerror = function(event) {
+        //console.log()
+        location.reload();
+    };
+    initializeCanvas();
+    setTimeout(function() {
+        openDoors();
+    }, 1000);
+}
+
+
 /**
  * onMessage.
  * @param {type} event
@@ -129,25 +151,7 @@ function playWooshSound() {
     sound.play();
 }
 
-/**
- * initialize.
- * @returns {undefined}
- */
-function init() {
-    socket = new WebSocket("ws://localhost:8080/SpyCom/actions");
-    socket.onmessage = onMessage;
-    socket.onclose = function(event) {
-        //location.reload();
-    }
-    socket.onerror = function(event) {
-        //console.log()
-        //location.reload();
-    };
-    initializeCanvas();
-    setTimeout(function() {
-        openDoors();
-    }, 1000);
-}
+
     
 /**
  * show voluntary code div.
@@ -269,4 +273,11 @@ $("#voluntaryCodeDiv button").click(function(event) {
     
     showCommunicationInterface();
     $("#voluntaryCodeDiv").hide();
+});
+
+$("#voluntaryCodeDiv input.codeBox").click(function() {
+    var id = $(this).attr("id");
+    var input = document.getElementById(id);
+    input.setSelectionRange(0, 1);
+    input.focus();
 });

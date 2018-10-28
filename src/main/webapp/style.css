@@ -135,6 +135,7 @@ div#clueInputDiv {
     font-size: x-large;
     border-radius: 4px;
     bottom: 3%;
+    background-color: grey;
 }
 
 #voluntaryCodeDiv div {
