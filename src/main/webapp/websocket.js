@@ -56,7 +56,7 @@ function updateClues() {
     });
     for(i = 0; i < clues.length; i++) {
         if(!(i in currentClues)) {
-            $("#clueDiv").append("<div class='clue' clueNumber="+clues[i].clueNumber+">"+(clues[i].clueNumber+1)+" : "+clues[i].clueContent+"</div>");
+            $("#clueDiv").append("<div class='clue' clueNumber="+clues[i].clueNumber+"><b>"+(clues[i].clueNumber+1)+". </b> "+clues[i].clueContent+"</div>");
         }
     }
 }
@@ -137,10 +137,11 @@ function init() {
     socket = new WebSocket("ws://localhost:8080/SpyCom/actions");
     socket.onmessage = onMessage;
     socket.onclose = function(event) {
-        location.reload();
+        //location.reload();
     }
     socket.onerror = function(event) {
-        location.reload();
+        //console.log()
+        //location.reload();
     };
     initializeCanvas();
     setTimeout(function() {
