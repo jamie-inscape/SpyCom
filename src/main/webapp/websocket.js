@@ -16,7 +16,7 @@ var agentId = "";
 var passcode = "";
 var player;
 var clues = [];
-
+var faction;
 
 /**
  * initialize.
@@ -32,6 +32,8 @@ function init() {
         //console.log()
         location.reload();
     };
+    if (player == null)
+        player = createPlayer();    
     initializeCanvas();
     setTimeout(function() {
         openDoors();
@@ -60,6 +62,11 @@ function onMessage(event) {
             clues[clueNumber] = createClue(clueNumber, clueContent);
             updateClues();
         }  
+    } else if (message.action == "updateFaction") {
+        if (player.getTeam() == message.team) {
+            player.setFaction(message.faction);
+            showFactionPropaganda();
+        }
     }
 }
 
@@ -83,6 +90,20 @@ function updateClues() {
     }
 }
 
+function showFactionPropaganda() {
+    if (player.getFaction() == "white") {
+        $("#whiteHat").show();
+        $("#blackHat").hide();
+        $("#factionDesc").html("White");
+    } else {
+        $("#blackHat").show();
+        $("#whiteHat").hide();
+        $("#factionDesc").html("Black");
+    }
+}
+
+
+
 /**
  * shows communication interface.
  * @returns {undefined}
@@ -93,6 +114,8 @@ function showCommunicationInterface() {
      $("#commentEntry").show();
      $("#codeEntry").show();
      $("textarea").show();
+     $("#voluntaryCodeDiv").hide();
+     showFactionPropaganda();
 }
 
 /**
@@ -104,6 +127,7 @@ function hideCommunicationInterface() {
     $("#clueDiv").hide();
     $("#commentEntry").hide();
     $("#codeEntry").hide();
+    $("img.factionLogo").hide();
 }
 
 /**
@@ -158,7 +182,10 @@ function playWooshSound() {
  * @returns {undefined}
  */
 function showVoluntaryCodeDiv() {
+    hideCommunicationInterface();
+    $("img.factionLogo").hide();
     $("#voluntaryCodeDiv").show();
+    $("input.codeBox").val("");
 }
 
 
@@ -175,6 +202,7 @@ function createPlayer() {
     var newplayer = {
 	agentId: agentId,
 	team: team,
+        faction: "",
         getAgentId: function() {
             return this.agentId;
         },
@@ -183,6 +211,12 @@ function createPlayer() {
         },
         getTeam: function() {
             return this.team;
+        },
+        setFaction: function(faction) {
+            this.faction = faction;
+        }, 
+        getFaction: function() {
+            return this.faction;
         }
     }
     return newplayer;
@@ -202,6 +236,10 @@ function createClue(clueNumber, clueContent) {
     return newClue;
 }
 
+/**
+ * Initialize the canvas.
+ * @returns {undefined}
+ */
 function initializeCanvas() {
     var canvas = document.getElementById("canvas");
     var context2D = canvas.getContext("2d");
@@ -211,12 +249,17 @@ function initializeCanvas() {
     context2D.drawImage(rightDoor, canvas.width / 2, 0);
 }
 
+/**
+ * Open the doors.
+ * @returns {undefined}
+ */
 function openDoors() {
     var canvas = document.getElementById("canvas");
     var context2D = canvas.getContext("2d");
     var leftDoor = document.getElementById("leftDoor");
     var rightDoor = document.getElementById("rightDoor");
     var position = 0;
+    
     var animationInterval = setInterval(function() {
         context2D.clearRect(0, 0, canvas.width, canvas.height);
         context2D.drawImage(leftDoor, -position, 0);
@@ -225,7 +268,12 @@ function openDoors() {
         if (position > canvas.width/2) {
             clearInterval(animationInterval);
             $("#canvas").hide();
-            showVoluntaryCodeDiv();
+            showCommunicationInterface();
+            var playerAction = {
+                action: "updateClueList",
+                team: player.getTeam()
+            };
+            socket.send(JSON.stringify(playerAction));
         }
     }, 50);
     
@@ -249,8 +297,7 @@ $("input.codeBox").keyup(function(e) {
 
 $("#voluntaryCodeDiv button").click(function(event) {
     var id = $(this).attr("id");
-    if (player == null)
-        player = createPlayer();
+    
     if (id == "enterButton") {
         var code = "";
         $("input.codeBox").each(function() {
@@ -281,3 +328,4 @@ $("#voluntaryCodeDiv input.codeBox").click(function() {
     input.setSelectionRange(0, 1);
     input.focus();
 });
+

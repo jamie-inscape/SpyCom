@@ -23,16 +23,16 @@
         </div>
         
         <div id ="commentDiv">
-            <div class="instructions"><h3>Team Chat</h3>
+            <div class="instructions"><h3><span id="factionDesc">Black</span> Hat Chat</h3>
             </div>
         </div>
         <div id ="clueDiv">
-            <div class="instructions"><h3>Clues</h3>
+            <div class="instructions"><h3>Intel</h3>
             </div>
         </div>
-        <div id ="codeEntry">
+        <!--<div id ="codeEntry">
             <button id="summonVoluntaryCodeDiv">Input Code</button>
-        </div>
+        </div> -->
         <div id ="commentEntry">
             <textarea id="commentTextArea" placeholder="Comment here:..." rows="8"></textarea>
         </div>
@@ -47,6 +47,8 @@
         <audio id="wooshSound" src="woosh.wav"></audio>
         <img id="leftDoor" src="left.png" alt="leftdoor" hidden/>
         <img id="rightDoor" src="right.png" alt="rightdoor" hidden/>
+        <img id ="whiteHat" class="factionLogo" src="whiteHat.png" alt="whiteHat" width="150" height="150" hidden/>
+        <img id ="blackHat" class="factionLogo" src="blackHat.png" alt="blackHat" width="150" height="150" hidden/>
         <script src="websocket.js"></script>
     </body>
 </html>

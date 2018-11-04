@@ -70,6 +70,9 @@ public class SpyWebSocketServer {
                     sessionHandler.sendComment(team, String.valueOf(agentId), comment);
                 } else if ("updateClueList".equals(jsonMessage.getString("action"))) {
                     int team = jsonMessage.getInt("team");
+                    InitializationSingleton initSingle = InitializationSingleton.getInitializationSingleton();
+                    if (!initSingle.getStatus())
+                        initSingle.initialize(sessionHandler);
                     sessionHandler.updateClues(team);
                 } else if ("checkCode".equals(jsonMessage.getString("action"))) {
                     String code = jsonMessage.getString("code");

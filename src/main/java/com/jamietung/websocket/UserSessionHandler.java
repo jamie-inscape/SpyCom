@@ -13,9 +13,9 @@ import java.util.logging.Logger;
 import javax.json.JsonObject;
 import javax.websocket.Session;
 import com.jamietung.model.User;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import com.jamietung.model.Team;
+import java.util.Arrays;
+import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.json.spi.JsonProvider;
 
@@ -28,9 +28,8 @@ public class UserSessionHandler {
     
     private final Set<Session> sessions = new HashSet<>();
     private final Set<User> users = new HashSet<>();
+    private final Set<Team> teams = new HashSet<>();
     
-    String team1CaretakerId = "120291293";
-    String team2CaretakerId = "83473284";
 
     public void addSession(Session session) {
         sessions.add(session);
@@ -38,6 +37,15 @@ public class UserSessionHandler {
                 JsonObject addMessage = createAddMessage(player);
                 sendToSession(session, addMessage);
         }
+    }
+    
+    
+    /**
+     * Add a team.
+     * @param aTeam 
+     */
+    public void addTeam(Team aTeam) {
+        teams.add(aTeam);
     }
 
     /**
@@ -106,9 +114,9 @@ public class UserSessionHandler {
     public void notifyCaretaker(String agentId, String code, int team) {
         String caretakerId = "";
         if (team == 1) {
-            caretakerId = team1CaretakerId;
+            //caretakerId = team1CaretakerId;
         } else if (team == 2) {
-            caretakerId = team2CaretakerId;
+            //caretakerId = team2CaretakerId;
         }
         String trash = agentId + ":" + code;
         JsonProvider provider = JsonProvider.provider();
@@ -118,7 +126,6 @@ public class UserSessionHandler {
                 .add("caretakerId", caretakerId)
                 .build();
         sendToAllConnectedSessions(notifyCaretakerMessage);
-        
     }
     
     
@@ -156,13 +163,14 @@ public class UserSessionHandler {
      * @param clue 
      */
     public void processClue(String agentId, String clueAgentId, String clue) {
-        if (agentId.equals(team1CaretakerId) || agentId.equals(team2CaretakerId)) {
-            int team = 0;
-            if (agentId.equals(team1CaretakerId)) team = 1;
-            else if (agentId.equals(team2CaretakerId)) team = 2;
-            SQLLiteDatabase.addClue(clue, team);
-            //sendClues(team);
-        }
+//        if (agentId.equals(team1CaretakerId) || agentId.equals(team2CaretakerId)) {
+//            int team = 0;
+//            if (agentId.equals(team1CaretakerId)) team = 1;
+//            else if (agentId.equals(team2CaretakerId)) team = 2;
+//            SQLLiteDatabase.addClue(clue, team);
+//            //sendClues(team);
+//        }
+
     }
 
     
@@ -172,25 +180,31 @@ public class UserSessionHandler {
      * Send Clues.
      * @param team 
      */
-    private void sendClues(int team, int count) {
+    private void sendClues(Team team) {
+        List<String> clues = team.getCluesToSend();
         JsonProvider provider = JsonProvider.provider();
-        ResultSet rs = SQLLiteDatabase.getClues(team, count);
-        int clueNumber = 0;
-        try {
-            
-            while(rs.next()){
-                String clueAgent = rs.getString("clue");
-                JsonObject clueMessage = provider.createObjectBuilder()
-                        .add("action", "updateClueList")
-                        .add("clueNumber", clueNumber++)
-                        .add("team", team)
-                        .add("clue", clueAgent)
-                        .build();
-                sendToAllConnectedSessions(clueMessage);
-            }
-            
-        } catch (SQLException ex) {
-            Logger.getLogger(UserSessionHandler.class.getName()).log(Level.SEVERE, null, ex);
+        String faction = "";
+        if (team.getTeamNumber() == 143524) {
+            faction = "white";
+        } else if (team.getTeamNumber() == 343295) {
+            faction = "black";
+        }
+        int i = 0;
+        JsonObject updateFactionMessage = provider.createObjectBuilder()
+                .add("action", "updateFaction")
+                .add("team", team.getTeamNumber())
+                .add("faction", faction)
+                .build();
+        sendToAllConnectedSessions(updateFactionMessage);
+        for (String aClue : clues) {
+            JsonObject updateClueListMessage = provider.createObjectBuilder()
+                .add("action", "updateClueList")
+                .add("team", team.getTeamNumber())
+                .add("clueNumber", i++)
+                .add("faction", faction)
+                .add("clue", aClue)
+                .build();
+        sendToAllConnectedSessions(updateClueListMessage);
         }
     }
 
@@ -200,22 +214,32 @@ public class UserSessionHandler {
      * @param team 
      */
     public void checkCode(String code, int team) {
-        boolean isSeen = SQLLiteDatabase.checkIsSeen(code, team);
-        boolean isValidCode = SQLLiteDatabase.checkIsValidCode(code, team);
-        if (isValidCode) {
-            if(!isSeen) {
-                SQLLiteDatabase.makeSeen(code);
+        Team currentTeam = null;
+        for(Team aTeam : teams) {
+            if (aTeam.getTeamNumber() == team) {
+                currentTeam = aTeam;
+                break;
             }
-            int codeCount = SQLLiteDatabase.countRevealed(team);
-            sendClues(team, codeCount);
-            
         }
-        
+        if (currentTeam != null) {
+            boolean isValidCode = currentTeam.inputCode(code);
+            if (isValidCode) {
+                sendClues(currentTeam);
+            }
+        }
     }
 
+    /**
+     * update clues for team.
+     * @param team 
+     */
     public void updateClues(int team) {
-        int codeCount = SQLLiteDatabase.countRevealed(team);
-        sendClues(team, codeCount);
+        for (Team aTeam : teams) {
+            if (aTeam.getTeamNumber() == team) {
+                sendClues(aTeam);
+                break;
+            }
+        }
     }
     
     

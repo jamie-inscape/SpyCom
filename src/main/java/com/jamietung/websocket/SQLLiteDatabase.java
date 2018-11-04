@@ -19,6 +19,8 @@ import java.util.logging.Logger;
  */
 public class SQLLiteDatabase {
     
+    private static Connection con = null;
+    
     /**
      * Return mysql database Connection.
      * @return con
@@ -26,7 +28,8 @@ public class SQLLiteDatabase {
     public static Connection connect() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/spyDB?useSSL=false", "root", "BalloonCat");
+            if (con == null)
+                con = DriverManager.getConnection("jdbc:mysql://localhost:3306/spyDB?autoReconnect=true&useSSL=false", "root", "1BlueBerry!");
             return con;
         } catch (Exception e) {
             System.out.println(e);
@@ -209,5 +212,7 @@ public class SQLLiteDatabase {
         }
         return 0;
     }
+    
+   
     
 }
